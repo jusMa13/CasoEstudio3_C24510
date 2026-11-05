@@ -54,4 +54,5 @@ class CursoTest extends TestCase
 
         $this->assertDatabaseCount('cursos', 1);
     }
+    
 }
