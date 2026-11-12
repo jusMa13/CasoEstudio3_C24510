@@ -2,14 +2,20 @@
 
 namespace App\Models;
 
+use Database\Factories\GrupoFactory;
 use DomainException;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use InvalidArgumentException;
 
 class Grupo extends Model
 {
+    /** @use HasFactory<GrupoFactory> */
+    use HasFactory;
+
     protected $table = 'grupos';
 
     protected $fillable = [
@@ -36,7 +42,7 @@ class Grupo extends Model
     {
         return $this->belongsToMany(
             Docente::class,
-            'docente_grupo',
+            'grupo_docente',
             'grupo_id',
             'docente_cod_empleado',
             'id',
@@ -48,12 +54,12 @@ class Grupo extends Model
     {
         return $this->belongsToMany(
             Estudiante::class,
-            'estudiante_matriculados',
+            'estudiantes_matriculados',
             'grupo_id',
-            'estudiante_carne',
+            'estudiante_id',
             'id',
             'carne'
-        )->using(EstudianteMatriculado::class)->withPivot('id', 'nota');
+        )->using(EstudianteMatriculado::class)->withPivot('nota');
     }
 
     public function matriculas(): HasMany
@@ -61,13 +67,13 @@ class Grupo extends Model
         return $this->hasMany(EstudianteMatriculado::class, 'grupo_id');
     }
 
-    public function asignarDocente(int $codigoDocente): void
+    public function asignarDocente(Docente $docente): void
     {
         if ($this->docentes()->count() >= 2) {
             throw new DomainException('Un grupo no puede tener más de dos docentes.');
         }
 
-        $this->docentes()->attach($codigoDocente);
+        $this->docentes()->attach($docente->cod_empleado);
     }
 
     public function puedeAbrirse(): bool
@@ -83,5 +89,18 @@ class Grupo extends Model
         }
 
         $this->update(['abierto' => true]);
+    }
+
+    public function registrarNota(Estudiante $estudiante, float $nota): void
+    {
+        if ($nota < 0 || $nota > 10) {
+            throw new InvalidArgumentException('La nota debe estar entre 0 y 10.');
+        }
+
+        $matricula = $this->matriculas()
+            ->where('estudiante_id', $estudiante->carne)
+            ->firstOrFail();
+
+        $matricula->update(['nota' => $nota]);
     }
 }

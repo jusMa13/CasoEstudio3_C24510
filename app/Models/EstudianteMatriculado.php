@@ -7,13 +7,15 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class EstudianteMatriculado extends Pivot
 {
-    protected $table = 'estudiante_matriculados';
+    protected $table = 'estudiantes_matriculados';
+
     public $incrementing = true;
+
     public $timestamps = false;
 
     protected $fillable = [
         'grupo_id',
-        'estudiante_carne',
+        'estudiante_id',
         'nota',
     ];
 
@@ -28,6 +30,6 @@ class EstudianteMatriculado extends Pivot
 
     public function estudiante(): BelongsTo
     {
-        return $this->belongsTo(Estudiante::class, 'estudiante_carne', 'carne');
+        return $this->belongsTo(Estudiante::class, 'estudiante_id', 'carne');
     }
 }

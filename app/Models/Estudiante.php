@@ -26,13 +26,13 @@ class Estudiante extends Model
         'carne',
         'nombre',
         'apellidos',
-        'consejero_cod_empleado',
+        'consejero_id',
     ];
 
     /** Profesor consejero (solo uno). */
     public function consejero(): BelongsTo
     {
-        return $this->belongsTo(Docente::class, 'consejero_cod_empleado', 'cod_empleado');
+        return $this->belongsTo(Docente::class, 'consejero_id', 'cod_empleado');
     }
 
     /** Grupos en los que está matriculado (con su nota). */
@@ -40,17 +40,17 @@ class Estudiante extends Model
     {
         return $this->belongsToMany(
             Grupo::class,
-            'estudiante_matriculados',
-            'estudiante_carne',
+            'estudiantes_matriculados',
+            'estudiante_id',
             'grupo_id',
             'carne',
             'id'
-        )->using(EstudianteMatriculado::class)->withPivot('id', 'nota');
+        )->using(EstudianteMatriculado::class)->withPivot('nota');
     }
 
     /** Registros de matrícula. */
     public function matriculas(): HasMany
     {
-        return $this->hasMany(EstudianteMatriculado::class, 'estudiante_carne', 'carne');
+        return $this->hasMany(EstudianteMatriculado::class, 'estudiante_id', 'carne');
     }
 }
